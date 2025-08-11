@@ -1,0 +1,194 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Insight Account API",
+    "version": "1.0.0",
+    "description": "API for managing Insight Account users and organizations"
+  },
+  "servers": [
+    {
+      "url": "https://{region}.api.insight.rapid7.com/account",
+      "variables": {
+        "region": {
+          "default": "us",
+          "description": "The region for the API endpoint"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/api/1/users": {
+      "get": {
+        "operationId": "getUsers",
+        "summary": "List all users",
+        "description": "Retrieve a list of all users in the account. Pagination is not supported for this endpoint.",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by user status",
+            "schema": {
+              "type": "string",
+              "enum": ["ACTIVE", "DISABLED", "PENDING"]
+            }
+          },
+          {
+            "name": "platform-admin",
+            "in": "query",
+            "description": "Filter by platform admin status",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Filter by email address",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "first_name",
+            "in": "query",
+            "description": "Filter by first name",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "last_name",
+            "in": "query",
+            "description": "Filter by last name",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the user"
+          },
+          "email": {
+            "type": "string",
+            "description": "User's email address"
+          },
+          "first_name": {
+            "type": "string",
+            "description": "User's first name"
+          },
+          "last_name": {
+            "type": "string",
+            "description": "User's last name"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "DISABLED", "PENDING"],
+            "description": "User's account status"
+          },
+          "platform_admin": {
+            "type": "boolean",
+            "description": "Whether the user is a platform administrator"
+          },
+          "federated": {
+            "type": "boolean",
+            "description": "Whether the user uses federated authentication"
+          },
+          "last_login": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Timestamp of user's last login"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "User's timezone"
+          }
+        },
+        "required": ["id", "email", "first_name", "last_name", "status"]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Error code"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "correlation_id": {
+            "type": "string",
+            "description": "Correlation ID for support"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Api-Key"
+      }
+    }
+  }
+}

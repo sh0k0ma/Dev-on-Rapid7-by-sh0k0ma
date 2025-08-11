@@ -1,0 +1,23 @@
+{
+  "name": "get_user",
+  "version": "1.0.0",
+  "description": "Node.js app to list and export Rapid7 Insight Account users",
+  "main": "app/server.js",
+  "scripts": {
+    "start": "node app/server.js",
+    "dev": "nodemon app/server.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": ["rapid7", "insight", "account", "users", "api"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

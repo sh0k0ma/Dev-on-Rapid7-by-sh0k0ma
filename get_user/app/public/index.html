@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rapid7 Insight Account Users</title>
+  <link rel="stylesheet" href="styles.css" />
+  <meta name="color-scheme" content="light dark" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+</head>
+<body>
+  <div class="container">
+    <h1>Rapid7 Insight Account Users</h1>
+
+    <form id="userForm" class="form-section">
+      <div class="filters-summary-bar" aria-live="polite">
+        <div class="summary-text">Filters applied:</div>
+        <div id="chipsContainer" class="chips"></div>
+        <button type="button" id="clearFilters" class="btn-primary">Clear All</button>
+      </div>
+
+      <div class="form-group">
+        <label for="region">Region:</label>
+        <select id="region" name="region" required>
+          <option value="us" selected>US (United States)</option>
+          <option value="eu">EU (Europe)</option>
+          <option value="ap">AP (Asia Pacific)</option>
+          <option value="ca">CA (Canada)</option>
+          <option value="au">AU (Australia)</option>
+        </select>
+      </div>
+
+      <div class="form-group api-key-group">
+        <label for="apiKey">API Key:</label>
+        <div class="input-with-action">
+          <input type="password" id="apiKey" name="apiKey" required aria-label="API Key" />
+          <button type="button" id="toggleApiKey" class="ghost" aria-pressed="false" aria-label="Show API Key">Show</button>
+        </div>
+      </div>
+
+      <fieldset class="filters" aria-label="Filters">
+        <legend>Filters (optional) <span id="filterBadge" class="filter-badge" aria-live="polite">0</span></legend>
+
+        <div class="group-title">Account Information</div>
+
+        <div class="form-group status">
+          <label for="status">Status</label>
+          <select id="status" name="status" aria-label="Status">
+            <option value="">Any</option>
+            <option value="ACTIVE">Active</option>
+            <option value="DISABLED">Disabled</option>
+            <option value="PENDING">Pending</option>
+          </select>
+        </div>
+
+        <div class="form-group platform-admin">
+          <label for="platformAdmin">Platform Admin</label>
+          <select id="platformAdmin" name="platformAdmin" aria-label="Platform Admin">
+            <option value="">Any</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+
+        <div class="group-title">Personal Information</div>
+
+        <div class="form-group first-name">
+          <label for="firstName">First Name</label>
+          <input type="text" id="firstName" name="firstName" placeholder="John" aria-label="First Name" />
+        </div>
+
+        <div class="form-group last-name">
+          <label for="lastName">Last Name</label>
+          <input type="text" id="lastName" name="lastName" placeholder="Doe" aria-label="Last Name" />
+        </div>
+
+        <div class="form-group email">
+          <label for="email">Email</label>
+          <input type="text" id="email" name="email" placeholder="user@example.com" aria-label="Email" aria-describedby="emailHelp" />
+          <div id="emailHelp" class="helper-text hidden" role="alert">Please enter a valid email.</div>
+        </div>
+      </fieldset>
+
+      <div class="button-group">
+        <button type="submit" id="getUsers" class="btn-primary">Get Users</button>
+        <button type="button" id="exportCsv" disabled>Export CSV</button>
+      </div>
+    </form>
+
+    <div id="loading" class="loading hidden">
+      <div class="spinner"></div>
+      <p>Fetching users...</p>
+    </div>
+
+    <div id="error" class="error hidden">
+      <h3>Error</h3>
+      <div id="errorContent"></div>
+    </div>
+
+    <div id="results" class="results hidden">
+      <div class="results-header">
+        <h2>Users</h2>
+        <span id="userCount" class="count"></span>
+      </div>
+
+      <div id="tableContainer">
+        <table id="usersTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Email</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Status</th>
+              <th>Platform Admin</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+
+      <div id="emptyState" class="empty-state hidden">
+        <p>No users found matching the current filters.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
