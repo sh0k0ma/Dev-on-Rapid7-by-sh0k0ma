@@ -1,0 +1,7 @@
+[
+  { "code": "us", "name": "US (United States)" },
+  { "code": "eu", "name": "EU (Europe)" },
+  { "code": "ap", "name": "AP (Asia Pacific)" },
+  { "code": "ca", "name": "CA (Canada)" },
+  { "code": "au", "name": "AU (Australia)" }
+]

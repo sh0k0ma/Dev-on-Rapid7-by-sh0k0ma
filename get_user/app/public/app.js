@@ -15,6 +15,7 @@ const filterBadge = document.getElementById('filterBadge');
 const toggleApiKeyBtn = document.getElementById('toggleApiKey');
 const chipsContainer = document.getElementById('chipsContainer');
 const clearFiltersBtn = document.getElementById('clearFilters');
+const regionSelect = document.getElementById('region');
 
 // Utility functions
 function showElement(element) {
@@ -172,7 +173,7 @@ form.addEventListener('submit', async (e) => {
   if (formData.get('lastName')) filters.last_name = formData.get('lastName');
   
   const requestBody = {
-    region: formData.get('region'),
+  region: formData.get('region') || 'all',
     apiKey: formData.get('apiKey'),
     filters
   };
@@ -230,14 +231,59 @@ exportButton.addEventListener('click', () => {
     });
   }
 
+  // Regions: load from backend canonical source
+  async function loadRegions() {
+    try {
+      const res = await fetch('/api/regions');
+      const data = await res.json();
+      const regions = Array.isArray(data?.regions) ? data.regions : [];
+      if (regionSelect) {
+        regionSelect.innerHTML = '';
+        regions.forEach((r, idx) => {
+          const opt = document.createElement('option');
+          opt.value = r.code;
+          opt.textContent = r.name;
+          if (idx === 0 && r.code === 'all') opt.selected = true; // default
+          regionSelect.appendChild(opt);
+        });
+      }
+    } catch (e) {
+      // Fallback to a static list including All Regions
+      if (regionSelect) {
+        regionSelect.innerHTML = '';
+        const fallback = [
+          { code: 'all', name: 'All Regions' },
+          { code: 'us', name: 'US (United States)' },
+          { code: 'eu', name: 'EU (Europe)' },
+          { code: 'ap', name: 'AP (Asia Pacific)' },
+          { code: 'ca', name: 'CA (Canada)' },
+          { code: 'au', name: 'AU (Australia)' }
+        ];
+        fallback.forEach((r, idx) => {
+          const opt = document.createElement('option');
+          opt.value = r.code;
+          opt.textContent = r.name;
+          if (idx === 0) opt.selected = true;
+          regionSelect.appendChild(opt);
+        });
+      }
+    }
+  }
+
   // Live filter badge & summary
   function updateFiltersUI() {
     const status = document.getElementById('status')?.value || '';
-    const platform = (new FormData(form).get('platformAdmin')) || 'any';
+  const platform = (new FormData(form).get('platformAdmin')) || 'any';
+  const region = (document.getElementById('region')?.value || 'all');
     const email = (document.getElementById('email')?.value || '').trim();
     const firstName = (document.getElementById('firstName')?.value || '').trim();
     const lastName = (document.getElementById('lastName')?.value || '').trim();
+    const chips = [];
     const active = [];
+    // Always show a Region chip, but only count it as active when not 'all'
+    const regionChip = { key: 'region', label: `Region: ${region === 'all' ? 'All' : region.toUpperCase()}` };
+    chips.push(regionChip);
+    if (region !== 'all') active.push(regionChip);
     if (status) active.push({ key: 'status', label: `Status: ${status}` });
     if (platform === 'yes') active.push({ key: 'platform-admin', label: 'Platform Admin: Yes' });
     if (platform === 'no') active.push({ key: 'platform-admin', label: 'Platform Admin: No' });
@@ -245,11 +291,12 @@ exportButton.addEventListener('click', () => {
     if (firstName) active.push({ key: 'first_name', label: `First Name: ${firstName}` });
     if (lastName) active.push({ key: 'last_name', label: `Last Name: ${lastName}` });
     if (filterBadge) filterBadge.textContent = String(active.length);
-  if (clearFiltersBtn) clearFiltersBtn.disabled = active.length === 0;
+    if (clearFiltersBtn) clearFiltersBtn.disabled = active.length === 0;
     // Render chips
     if (chipsContainer) {
       chipsContainer.innerHTML = '';
-      active.forEach(item => {
+      // Render Region chip first, followed by other actives
+      chips.forEach(item => {
         const chip = document.createElement('span');
         chip.className = 'chip';
         chip.textContent = item.label + ' ';
@@ -272,10 +319,17 @@ exportButton.addEventListener('click', () => {
     const evt = el.tagName === 'SELECT' ? 'change' : 'input';
     el.addEventListener(evt, updateFiltersUI);
   });
+  // Region updates
+  if (regionSelect) {
+    regionSelect.addEventListener('change', updateFiltersUI);
+  }
 
   // Remove individual filter via chip
   function removeFilter(key) {
   switch (key) {
+      case 'region':
+        if (regionSelect) regionSelect.value = 'all';
+        break;
       case 'status':
         document.getElementById('status').value = '';
         break;
@@ -298,6 +352,7 @@ exportButton.addEventListener('click', () => {
   // Clear all filters
   if (clearFiltersBtn) {
     clearFiltersBtn.addEventListener('click', () => {
+  if (regionSelect) regionSelect.value = 'all';
       document.getElementById('status').value = '';
       document.getElementById('platformAdmin').value = '';
       document.getElementById('email').value = '';
@@ -332,6 +387,7 @@ exportButton.addEventListener('click', () => {
   const STORAGE_KEY = 'r7_filters_v1';
   function persistFilters() {
     const data = {
+  region: document.getElementById('region')?.value || 'all',
       status: document.getElementById('status')?.value || '',
       platformAdmin: (new FormData(form).get('platformAdmin')) || 'any',
       email: document.getElementById('email')?.value || '',
@@ -346,6 +402,10 @@ exportButton.addEventListener('click', () => {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const data = JSON.parse(raw);
+      if (regionSelect && data.region) {
+        const exists = Array.from(regionSelect.options).some(o => o.value === data.region);
+        regionSelect.value = exists ? data.region : 'all';
+      }
       document.getElementById('status').value = data.status || '';
   const platform = data.platformAdmin || '';
   document.getElementById('platformAdmin').value = platform;
@@ -355,5 +415,9 @@ exportButton.addEventListener('click', () => {
     } catch {}
   }
 
-  restoreFilters();
-  updateFiltersUI();
+  // Initialize
+  (async () => {
+    await loadRegions();
+    restoreFilters();
+    updateFiltersUI();
+  })();
