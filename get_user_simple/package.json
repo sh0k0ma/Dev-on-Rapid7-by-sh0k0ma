@@ -1,0 +1,14 @@
+{
+  "name": "get_user_simple",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal Node.js console tool to fetch users across regions",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node ./src/index.js",
+    "test": "echo \"No tests defined\""
+  },
+  "license": "MIT"
+}
